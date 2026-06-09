@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络主播偷逃税案件可视化 Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #222240;
+            --text-primary: #e8e8f0;
+            --text-secondary: #9090b0;
+            --text-muted: #606080;
+            --accent-1: #ff6b6b;
+            --accent-2: #ffd93d;
+            --accent-3: #6bcb77;
+            --accent-4: #4d96ff;
+            --accent-5: #9b59b6;
+            --accent-6: #e67e22;
+            --border: #2a2a45;
+            --radius: 12px;
+            --gap: 16px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        .dashboard { max-width: 1440px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 24px 28px;
+            border-radius: var(--radius);
+            margin-bottom: var(--gap);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border: 1px solid var(--border);
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header .subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .filters {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-group { display: flex; align-items: center; gap: 6px; }
+        .filter-group label { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+        .filter-group select {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.06);
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .filter-group select option { background: #1a1a2e; color: #e8e8f0; }
+
+        /* KPI Row */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .kpi-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .kpi-value {
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .kpi-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+        /* Chart Row */
+        .chart-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+        .chart-container {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+        .chart-container.full { grid-column: 1 / -1; }
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-title .badge {
+            font-size: 10px;
+            background: rgba(255,255,255,0.08);
+            color: var(--text-secondary);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .chart-wrap { position: relative; width: 100%; }
+        .chart-wrap canvas { max-height: 320px; }
+
+        /* Province bar colors */
+        .province-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .province-name { width: 60px; font-size: 11px; color: var(--text-secondary); text-align: right; flex-shrink: 0; }
+        .province-track { flex: 1; height: 18px; background: rgba(255,255,255,0.05); border-radius: 9px; overflow: hidden; position: relative; }
+        .province-fill { height: 100%; border-radius: 9px; transition: width 0.6s ease; min-width: 2px; }
+        .province-val { width: 70px; font-size: 11px; color: var(--text-primary); font-weight: 600; text-align: right; flex-shrink: 0; }
+
+        /* Table */
+        .table-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .data-table thead th {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+        .data-table thead th:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+        .data-table tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: top;
+        }
+        .data-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+        .data-table tbody tr:last-child td { border-bottom: none; }
+        .amount-high { color: #ff6b6b; font-weight: 600; }
+        .amount-mid { color: #ffd93d; font-weight: 600; }
+        .amount-low { color: #6bcb77; }
+        .tag {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin: 1px 2px;
+        }
+        .tag-individual { background: rgba(77,150,255,0.15); color: #4d96ff; }
+        .tag-mcn { background: rgba(155,89,182,0.15); color: #9b59b6; }
+        .tag-shop { background: rgba(230,126,34,0.15); color: #e67e22; }
+        .tag-big { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 11px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: var(--gap);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: flex-start; }
+            .filters { width: 100%; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .chart-row { grid-template-columns: 1fr; }
+            .kpi-value { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+
+    <!-- Header -->
+    <header class="header">
+        <div>
+            <h1>📊 网络主播偷逃税案件可视化</h1>
+            <div class="subtitle">数据来源：国家税务总局 / 新华社 / 主流媒体 · 共 28 起案件 · 截至 2026-06</div>
+        </div>
+        <div class="filters">
+            <div class="filter-group">
+                <label>年份</label>
+                <select id="filter-year" onchange="dashboard.applyFilters()">
+                    <option value="all">全部</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>省份</label>
+                <select id="filter-province" onchange="dashboard.applyFilters()">
+                    <option value="all">全部</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>类型</label>
+                <select id="filter-type" onchange="dashboard.applyFilters()">
+                    <option value="all">全部</option>
+                    <option value="individual">个人主播</option>
+                    <option value="mcn">MCN机构</option>
+                    <option value="shop">网店</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- KPI Cards -->
+    <section class="kpi-row" id="kpi-section">
+        <div class="kpi-card">
+            <div class="kpi-label">📋 案件总数</div>
+            <div class="kpi-value" id="kpi-total">-</div>
+            <div class="kpi-sub" id="kpi-total-sub"></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">💰 处罚总额</div>
+            <div class="kpi-value" style="color:#ff6b6b" id="kpi-amount">-</div>
+            <div class="kpi-sub" id="kpi-amount-sub"></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">🏆 最高单案</div>
+            <div class="kpi-value" style="color:#ffd93d;font-size:22px" id="kpi-max">-</div>
+            <div class="kpi-sub" id="kpi-max-sub"></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">📊 平均处罚</div>
+            <div class="kpi-value" style="color:#6bcb77" id="kpi-avg">-</div>
+            <div class="kpi-sub" id="kpi-avg-sub"></div>
+        </div>
+    </section>
+
+    <!-- Charts Row 1: Timeline + Province -->
+    <section class="chart-row">
+        <div class="chart-container">
+            <div class="chart-title">📅 各年度案件数量与处罚金额 <span class="badge">柱状图</span></div>
+            <div class="chart-wrap"><canvas id="chart-timeline"></canvas></div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">🗺️ 各省案件数量 <span class="badge">地区分布</span></div>
+            <div class="chart-wrap" style="max-height:340px;overflow-y:auto;" id="province-list"></div>
+        </div>
+    </section>
+
+    <!-- Charts Row 2: Province Amount + Method -->
+    <section class="chart-row">
+        <div class="chart-container">
+            <div class="chart-title">💰 各省处罚总额（万元） <span class="badge">地区排名</span></div>
+            <div class="chart-wrap" style="max-height:380px;overflow-y:auto;" id="province-amount-list"></div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">🔍 违法手法分布 <span class="badge">环形图</span></div>
+            <div class="chart-wrap"><canvas id="chart-method"></canvas></div>
+        </div>
+    </section>
+
+    <!-- Charts Row 3: Top Cases -->
+    <section class="chart-row">
+        <div class="chart-container full">
+            <div class="chart-title">🏅 处罚金额 TOP 15 案件 <span class="badge">水平柱状图</span></div>
+            <div class="chart-wrap"><canvas id="chart-top"></canvas></div>
+        </div>
+    </section>
+
+    <!-- Detail Table -->
+    <section class="table-section">
+        <div class="chart-title" style="margin-bottom:12px">📋 全部案件明细 <span class="badge" id="table-count"></span></div>
+        <table class="data-table" id="data-table">
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </section>
+
+    <footer class="footer">
+        数据来源：国家税务总局官网 · 数据采集时间：2026-06-09
+    </footer>
+</div>
+
+<script>
+// ===================== DATA =====================
+const RAW_DATA = [
+    { id:1, name:"黄薇（薇娅）", type:"individual", date:"2021-12-20", year:2021, province:"浙江省", city:"杭州", penalty:134100.00, evaded:70300.00, method:"隐匿收入+转换收入性质", taxAuth:"杭州市税务局稽查局", note:"历史最高；7家个独企业设上海崇明" },
+    { id:2, name:"徐国豪", type:"individual", date:"2022-06-16", year:2022, province:"江西省", city:"抚州", penalty:10800.00, evaded:3888.72, method:"转换收入性质+未申报", taxAuth:"抚州市税务局稽查局", note:"仅次于薇娅的第二高额" },
+    { id:3, name:"朱宸慧（雪梨）", type:"individual", date:"2021-11-22", year:2021, province:"浙江省", city:"杭州", penalty:6555.31, evaded:3036.95, method:"设立个独企业转换收入性质", taxAuth:"杭州市税务局稽查局", note:"设立6家以上个独企业" },
+    { id:4, name:"平荣（驴嫂平荣）", type:"individual", date:"2022-02-22", year:2022, province:"广东省", city:"广州", penalty:6200.30, evaded:3376.77, method:"隐匿佣金收入+少申报", taxAuth:"广州市税务局稽查局", note:"经提醒督促仍整改不彻底" },
+    { id:5, name:"林珊珊", type:"individual", date:"2021-11-22", year:2021, province:"浙江省", city:"杭州", penalty:2767.25, evaded:1311.94, method:"设立个独企业转换收入性质", taxAuth:"杭州市税务局稽查局", note:"与雪梨同案查处" },
+    { id:6, name:"河北楚鸣文化传媒", type:"mcn", date:"2025-09-19", year:2025, province:"河北省", city:"保定", penalty:2225.88, evaded:1621.21, method:"虚开发票+多列成本+未代扣个税", taxAuth:"保定市税务局稽查局", note:"MCN机构；自身偷逃+未代扣" },
+    { id:7, name:"白冰", type:"individual", date:"2026-04-28", year:2026, province:"福建省", city:"厦门/重庆", penalty:1891.24, evaded:911.18, method:"转换收入性质+私户收款+虚列消费", taxAuth:"国家税务总局组织", note:"探店网红；千万粉丝" },
+    { id:8, name:"余洋", type:"individual", date:"2024-11-15", year:2024, province:"四川省", city:"泸州", penalty:1431.00, evaded:805.00, method:"个人账户收款隐匿收入", taxAuth:"泸州市税务局稽查局", note:"" },
+    { id:9, name:"吴川", type:"individual", date:"2023-09-16", year:2023, province:"广西", city:"广西", penalty:1359.08, evaded:827.91, method:"转换收入性质+拒不配合", taxAuth:"广西壮族自治区税务局", note:"经约谈警示仍拒不配合" },
+    { id:10, name:"田小龙", type:"individual", date:"2024-11-15", year:2024, province:"辽宁省", city:"营口", penalty:1348.00, evaded:735.00, method:"个人账户收款隐匿收入", taxAuth:"营口市税务局稽查局", note:"" },
+    { id:11, name:"王子柏", type:"individual", date:"2024-12-18", year:2024, province:"上海市", city:"上海", penalty:1330.00, evaded:749.00, method:"近亲属账户收款隐匿收入", taxAuth:"上海市税务局第三稽查局", note:"利用近亲属账户" },
+    { id:12, name:"孙自烜（帝师）", type:"individual", date:"2022-06-09", year:2022, province:"北京市", city:"北京", penalty:1171.45, evaded:452.74, method:"借助中间公司隐匿打赏收入", taxAuth:"北京市税务局第二稽查局", note:"工作室设上海崇明；立案后不配合" },
+    { id:13, name:"南昌上品屋服饰店", type:"shop", date:"2025-11-04", year:2025, province:"江西省", city:"南昌", penalty:669.58, evaded:366.89, method:"拆分经营+隐匿平台收入", taxAuth:"南昌市税务局稽查局", note:"网店经营" },
+    { id:14, name:"王纯善", type:"individual", date:"2023-11-13", year:2023, province:"辽宁省", city:"大连", penalty:653.61, evaded:360.71, method:"隐匿收入+虚假申报", taxAuth:"大连市税务局第一稽查局", note:"" },
+    { id:15, name:"范思峰", type:"individual", date:"2022-06-30", year:2022, province:"福建省", city:"厦门", penalty:649.50, evaded:268.45, method:"未申报+隐匿收入", taxAuth:"厦门市税务局稽查局", note:"" },
+    { id:16, name:"姚振宇", type:"individual", date:"2023-04-27", year:2023, province:"福建省", city:"厦门", penalty:545.80, evaded:236.30, method:"虚假申报偷逃个税", taxAuth:"厦门市税务局稽查局", note:"" },
+    { id:17, name:"彭煊之（彭十六）", type:"individual", date:"2026-01-14", year:2026, province:"重庆市", city:"重庆", penalty:415.05, evaded:216.32, method:"隐匿收入+虚假申报", taxAuth:"重庆市税务局第三稽查局", note:"3000万粉丝；多平台禁言" },
+    { id:18, name:"李呈祥", type:"individual", date:"2025-09-19", year:2025, province:"辽宁省", city:"沈阳", penalty:402.14, evaded:243.50, method:"个人账户收款隐匿收入", taxAuth:"沈阳市税务局第三稽查局", note:"" },
+    { id:19, name:"郭鑫鑫", type:"individual", date:"2025-11-04", year:2025, province:"内蒙古", city:"赤峰", penalty:268.89, evaded:141.01, method:"隐匿销售收入+虚假申报", taxAuth:"赤峰市税务局第一稽查局", note:"" },
+    { id:20, name:"金茜茜", type:"individual", date:"2024-11-15", year:2024, province:"浙江省", city:"台州", penalty:247.00, evaded:125.00, method:"转换收入性质虚假申报", taxAuth:"台州市税务局稽查局", note:"" },
+    { id:21, name:"常州以马内利塑业", type:"shop", date:"2025-11-04", year:2025, province:"江苏省", city:"常州", penalty:225.28, evaded:101.67, method:"个人账户收款隐匿未开票收入", taxAuth:"常州市税务局第一稽查局", note:"网店经营" },
+    { id:22, name:"程虎", type:"individual", date:"2024-12-18", year:2024, province:"福建省", city:"厦门", penalty:199.00, evaded:121.00, method:"个人账户收款隐匿收入", taxAuth:"厦门市税务局第一稽查局", note:"" },
+    { id:23, name:"哈尔滨女人世界店铺", type:"shop", date:"2025-11-04", year:2025, province:"黑龙江省", city:"哈尔滨", penalty:189.03, evaded:112.48, method:"隐匿销售收入+虚假申报", taxAuth:"哈尔滨市税务局稽查局", note:"直播店铺" },
+    { id:24, name:"杨遂娃", type:"individual", date:"2026-01-14", year:2026, province:"甘肃省", city:"天水", penalty:181.40, evaded:101.64, method:"隐匿佣金收入+虚假退税", taxAuth:"天水市税务局第一稽查局", note:"实名举报查实" },
+    { id:25, name:"胖多大码服饰店", type:"shop", date:"2025-11-04", year:2025, province:"吉林省", city:"吉林", penalty:117.70, evaded:67.52, method:"账外经营+隐匿收入", taxAuth:"吉林市税务局第一稽查局", note:"网店" },
+    { id:26, name:"湖南颜客文化传媒", type:"mcn", date:"2025-09-19", year:2025, province:"湖南省", city:"长沙", penalty:104.43, evaded:208.86, method:"未代扣代缴主播个税", taxAuth:"长沙市税务局第一稽查局", note:"MCN机构" },
+    { id:27, name:"加婵婵", type:"individual", date:"2023-02-14", year:2023, province:"陕西省", city:"西安", penalty:18.57, evaded:10.28, method:"未依法办理纳税申报", taxAuth:"西安市税务局第三稽查局", note:"" },
+    { id:28, name:"贾亚亚", type:"individual", date:"2023-02-14", year:2023, province:"陕西省", city:"西安", penalty:17.67, evaded:9.81, method:"未依法办理纳税申报", taxAuth:"西安市税务局第三稽查局", note:"" },
+];
+
+// Province color mapping
+const PROVINCE_COLORS = {
+    "浙江省":"#ff6b6b","江西省":"#ee5a24","广东省":"#e17055","河北省":"#d63031",
+    "福建省":"#6c5ce7","辽宁省":"#a29bfe","四川省":"#fd79a8","广西":"#00b894",
+    "上海市":"#00cec9","北京市":"#0984e3","重庆市":"#fdcb6e","内蒙古":"#74b9ff",
+    "江苏省":"#55efc4","黑龙江省":"#81ecec","甘肃省":"#ffeaa7","吉林省":"#dfe6e9",
+    "湖南省":"#e84393","陕西省":"#b2bec3","default":"#636e72"
+};
+function getProvinceColor(p) { return PROVINCE_COLORS[p] || PROVINCE_COLORS.default; }
+
+const METHOD_COLORS = ["#ff6b6b","#ffd93d","#6bcb77","#4d96ff","#9b59b6","#e67e22","#1abc9c"];
+
+function fmt(n) {
+    if (n >= 10000) return (n/10000).toFixed(2) + '亿';
+    if (n >= 1000) return (n/1000).toFixed(2) + '千万';
+    return n.toFixed(0) + '万';
+}
+function fmtShort(n) {
+    if (n >= 10000) return (n/10000).toFixed(1) + '亿';
+    if (n >= 1000) return (n/1000).toFixed(1) + '千万';
+    return n.toFixed(0);
+}
+
+// ===================== DASHBOARD =====================
+class Dashboard {
+    constructor(data) {
+        this.raw = data;
+        this.filtered = data;
+        this.charts = {};
+        this.init();
+    }
+
+    init() {
+        this.populateFilters();
+        this.applyFilters();
+    }
+
+    populateFilters() {
+        const yearSelect = document.getElementById('filter-year');
+        const years = [...new Set(this.raw.map(d => d.year))].sort();
+        years.forEach(y => {
+            const o = document.createElement('option');
+            o.value = y; o.textContent = y + '年';
+            yearSelect.appendChild(o);
+        });
+        const provSelect = document.getElementById('filter-province');
+        const provs = [...new Set(this.raw.map(d => d.province))].sort();
+        provs.forEach(p => {
+            const o = document.createElement('option');
+            o.value = p; o.textContent = p;
+            provSelect.appendChild(o);
+        });
+    }
+
+    applyFilters() {
+        const year = document.getElementById('filter-year').value;
+        const province = document.getElementById('filter-province').value;
+        const type = document.getElementById('filter-type').value;
+        this.filtered = this.raw.filter(d => {
+            if (year !== 'all' && d.year !== parseInt(year)) return false;
+            if (province !== 'all' && d.province !== province) return false;
+            if (type !== 'all' && d.type !== type) return false;
+            return true;
+        });
+        this.renderKPIs();
+        this.renderTimelineChart();
+        this.renderProvinceBars();
+        this.renderProvinceAmountBars();
+        this.renderMethodChart();
+        this.renderTopChart();
+        this.renderTable();
+    }
+
+    renderKPIs() {
+        const data = this.filtered;
+        const total = data.length;
+        const totalAmt = data.reduce((s, d) => s + d.penalty, 0);
+        const max = data.reduce((m, d) => d.penalty > m ? d.penalty : m, 0);
+        const maxItem = data.find(d => d.penalty === max);
+        const avg = total > 0 ? totalAmt / total : 0;
+        document.getElementById('kpi-total').textContent = total;
+        document.getElementById('kpi-total-sub').textContent = total === this.raw.length ? '全部案件' : `筛选后 / 共${this.raw.length}起`;
+        document.getElementById('kpi-amount').textContent = fmt(totalAmt);
+        document.getElementById('kpi-amount-sub').textContent = '处罚总额';
+        document.getElementById('kpi-max').textContent = fmtShort(max);
+        document.getElementById('kpi-max-sub').textContent = maxItem ? maxItem.name : '-';
+        document.getElementById('kpi-avg').textContent = fmtShort(avg);
+        document.getElementById('kpi-avg-sub').textContent = '每案平均处罚';
+    }
+
+    renderTimelineChart() {
+        const data = this.filtered;
+        const years = [...new Set(data.map(d => d.year))].sort();
+        const counts = years.map(y => data.filter(d => d.year === y).length);
+        const amounts = years.map(y => data.filter(d => d.year === y).reduce((s,d) => s + d.penalty, 0));
+        const ctx = document.getElementById('chart-timeline').getContext('2d');
+        if (this.charts.timeline) { this.charts.timeline.destroy(); }
+        this.charts.timeline = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: years.map(y => y + '年'),
+                datasets: [
+                    {
+                        label: '案件数',
+                        data: counts,
+                        backgroundColor: 'rgba(77,150,255,0.7)',
+                        borderColor: '#4d96ff',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        order: 2,
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: '处罚总额(万元)',
+                        data: amounts,
+                        type: 'line',
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255,107,107,0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ff6b6b',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3,
+                        order: 1,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top', labels: { color:'#9090b0', usePointStyle:true, padding:16 } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                if (ctx.dataset.label === '案件数') return `案件数: ${ctx.parsed.y}`;
+                                return `处罚总额: ${fmt(ctx.parsed.y)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { color:'rgba(255,255,255,0.05)' }, ticks: { color:'#9090b0' } },
+                    y: { beginAtZero: true, grid: { color:'rgba(255,255,255,0.05)' }, ticks: { color:'#9090b0', stepSize:1 } },
+                    y1: { beginAtZero: true, position:'right', grid: { display:false }, ticks: { color:'#9090b0', callback:v=>fmtShort(v) } }
+                }
+            }
+        });
+    }
+
+    renderProvinceBars() {
+        const data = this.filtered;
+        const provMap = {};
+        data.forEach(d => { provMap[d.province] = (provMap[d.province]||0) + 1; });
+        const entries = Object.entries(provMap).sort((a,b) => b[1] - a[1]);
+        const maxCount = Math.max(...entries.map(e=>e[1]), 1);
+        const container = document.getElementById('province-list');
+        container.innerHTML = entries.map(([prov, count]) => {
+            const pct = (count / maxCount * 100).toFixed(0);
+            const color = getProvinceColor(prov);
+            return `<div class="province-bar">
+                <span class="province-name">${prov}</span>
+                <div class="province-track"><div class="province-fill" style="width:${pct}%;background:${color}"></div></div>
+                <span class="province-val">${count} 起</span>
+            </div>`;
+        }).join('');
+    }
+
+    renderProvinceAmountBars() {
+        const data = this.filtered;
+        const provMap = {};
+        data.forEach(d => { provMap[d.province] = (provMap[d.province]||0) + d.penalty; });
+        const entries = Object.entries(provMap).sort((a,b) => b[1] - a[1]);
+        const maxAmt = Math.max(...entries.map(e=>e[1]), 1);
+        const container = document.getElementById('province-amount-list');
+        container.innerHTML = entries.map(([prov, amt]) => {
+            const pct = (amt / maxAmt * 100).toFixed(0);
+            const color = getProvinceColor(prov);
+            return `<div class="province-bar">
+                <span class="province-name">${prov}</span>
+                <div class="province-track"><div class="province-fill" style="width:${pct}%;background:${color}"></div></div>
+                <span class="province-val">${fmt(amt)}</span>
+            </div>`;
+        }).join('');
+    }
+
+    renderMethodChart() {
+        const data = this.filtered;
+        const methodMap = {};
+        data.forEach(d => {
+            // Classify methods
+            let m = '';
+            if (d.method.includes('隐匿')) m = '隐匿收入';
+            else if (d.method.includes('转换')) m = '转换收入性质';
+            else if (d.method.includes('虚假申报')||d.method.includes('未申报')||d.method.includes('未申报')) m = '虚假/未申报';
+            else if (d.method.includes('虚开发票')) m = '虚开发票';
+            else if (d.method.includes('个人账户')) m = '隐匿收入';
+            else if (d.method.includes('拆分')) m = '拆分经营';
+            else if (d.method.includes('未代扣')) m = '未代扣个税';
+            else m = '其他';
+            methodMap[m] = (methodMap[m]||0) + 1;
+        });
+        // Combine small ones
+        const entries = Object.entries(methodMap).sort((a,b) => b[1]-a[1]);
+        const labels = entries.map(e=>e[0]);
+        const values = entries.map(e=>e[1]);
+        const ctx = document.getElementById('chart-method').getContext('2d');
+        if (this.charts.method) this.charts.method.destroy();
+        this.charts.method = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: METHOD_COLORS.map(c=>c+'CC'),
+                    borderColor: '#1a1a2e',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: { position:'right', labels:{ color:'#9090b0', usePointStyle:true, padding:12 } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+                                const pct = ((ctx.parsed/total)*100).toFixed(1);
+                                return `${ctx.label}: ${ctx.parsed} 起 (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    renderTopChart() {
+        const data = [...this.filtered].sort((a,b) => b.penalty - a.penalty).slice(0, 15);
+        const labels = data.map(d => d.name.length > 12 ? d.name.substring(0,12)+'…' : d.name);
+        const values = data.map(d => d.penalty);
+        const colors = values.map(v => {
+            if (v >= 10000) return '#ff6b6b';
+            if (v >= 1000) return '#ffd93d';
+            return '#6bcb77';
+        });
+        const ctx = document.getElementById('chart-top').getContext('2d');
+        if (this.charts.top) this.charts.top.destroy();
+        this.charts.top = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '处罚金额(万元)',
+                    data: values,
+                    backgroundColor: colors.map(c=>c+'CC'),
+                    borderColor: colors,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display:false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `处罚金额: ${fmt(ctx.parsed.x)}`
+                        }
+                    }
+                },
+                scales: {
+                    x: { beginAtZero: true, grid: { color:'rgba(255,255,255,0.05)' }, ticks: { color:'#9090b0', callback:v=>fmtShort(v) } },
+                    y: { grid: { display:false }, ticks: { color:'#9090b0' } }
+                }
+            }
+        });
+    }
+
+    renderTable() {
+        const data = [...this.filtered].sort((a,b) => b.penalty - a.penalty);
+        document.getElementById('table-count').textContent = data.length + ' 条记录';
+
+        // Head
+        const thead = document.getElementById('table-head');
+        const columns = [
+            { field:'name', label:'涉案主体' },
+            { field:'date', label:'公告日期' },
+            { field:'province', label:'省份' },
+            { field:'penalty', label:'处罚金额(万)' },
+            { field:'evaded', label:'偷逃税额(万)' },
+            { field:'method', label:'主要手法' },
+            { field:'type', label:'类型' },
+        ];
+        thead.innerHTML = '<tr>' + columns.map(c =>
+            `<th onclick="dashboard.sortTable('${c.field}')" data-field="${c.field}">${c.label}</th>`
+        ).join('') + '</tr>';
+
+        // Body
+        const tbody = document.getElementById('table-body');
+        const rows = data.map(d => {
+            const amtClass = d.penalty >= 10000 ? 'amount-high' : d.penalty >= 1000 ? 'amount-mid' : 'amount-low';
+            const typeTag = d.type === 'individual' ? '<span class="tag tag-individual">主播</span>'
+                : d.type === 'mcn' ? '<span class="tag tag-mcn">MCN</span>'
+                : '<span class="tag tag-shop">网店</span>';
+            const isBig = d.penalty >= 10000 ? '<span class="tag tag-big">重磅</span>' : '';
+            return `<tr>
+                <td><strong>${d.name}</strong> ${isBig}</td>
+                <td style="color:var(--text-secondary)">${d.date}</td>
+                <td>${d.province}</td>
+                <td class="${amtClass}">${d.penalty.toLocaleString()}</td>
+                <td>${d.evaded.toLocaleString()}</td>
+                <td style="font-size:11px;color:var(--text-secondary)">${d.method}</td>
+                <td>${typeTag}</td>
+            </tr>`;
+        }).join('');
+        tbody.innerHTML = rows;
+        this._sortCol = null;
+        this._sortDir = 'desc';
+    }
+
+    sortTable(field) {
+        if (this._sortCol === field) this._sortDir = this._sortDir === 'asc' ? 'desc' : 'asc';
+        else { this._sortCol = field; this._sortDir = 'desc'; }
+        const sorted = [...this.filtered].sort((a,b) => {
+            let av = a[field], bv = b[field];
+            if (typeof av === 'string') av = av.localeCompare(bv, 'zh');
+            if (typeof av === 'number') av = av - bv;
+            return this._sortDir === 'asc' ? av : -av;
+        });
+        this.filtered = sorted;
+        this.renderTable();
+        // Also update other views
+        this.renderKPIs();
+        this.renderTimelineChart();
+        this.renderProvinceBars();
+        this.renderProvinceAmountBars();
+        this.renderMethodChart();
+        this.renderTopChart();
+    }
+}
+
+const dashboard = new Dashboard(RAW_DATA);
+</script>
+</body>
+</html>
