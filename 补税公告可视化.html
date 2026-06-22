@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026年1-6月A股上市公司补税公告全景</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<style>
+:root {
+    --bg-primary: #0f1923;
+    --bg-card: #1a2735;
+    --bg-header: #0d1b2a;
+    --text-primary: #e0e6ed;
+    --text-secondary: #8899aa;
+    --text-muted: #5a6a7a;
+    --border: #253545;
+    --color-1: #4fc3f7;
+    --color-2: #81c784;
+    --color-3: #ffb74d;
+    --color-4: #e57373;
+    --color-5: #ba68c8;
+    --color-6: #4db6ac;
+    --color-7: #ff8a65;
+    --color-8: #a1887f;
+    --positive: #81c784;
+    --negative: #e57373;
+    --warning: #ffb74d;
+    --accent: #4fc3f7;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+.dashboard-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 20px 24px;
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1a2735 100%);
+    padding: 24px 28px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.dashboard-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+.header-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.filters {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.filter-group select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+
+.filter-group select:focus {
+    border-color: var(--accent);
+}
+
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.kpi-card {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.kpi-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.kpi-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+}
+
+.kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 2px;
+}
+
+.kpi-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.chart-row-single {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.chart-container {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+}
+
+.chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-title .title-accent {
+    width: 3px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 2px;
+}
+
+.chart-container canvas {
+    max-height: 340px;
+}
+
+.table-section {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.table-title {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-extra {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.data-table thead th:hover {
+    color: var(--accent);
+}
+
+.sort-arrow {
+    margin-left: 4px;
+    opacity: 0.5;
+}
+
+.data-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(79,195,247,0.05);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.amount-bar {
+    display: inline-block;
+    height: 6px;
+    border-radius: 3px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.tag-big {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.tag-red { background: rgba(229,115,115,0.2); color: #e57373; }
+.tag-orange { background: rgba(255,183,77,0.2); color: #ffb74d; }
+.tag-blue { background: rgba(79,195,247,0.2); color: #4fc3f7; }
+.tag-green { background: rgba(129,199,132,0.2); color: #81c784; }
+
+.month-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.month-1 { background: rgba(79,195,247,0.15); color: #4fc3f7; }
+.month-2 { background: rgba(129,199,132,0.15); color: #81c784; }
+.month-3 { background: rgba(255,183,77,0.15); color: #ffb74d; }
+.month-4 { background: rgba(229,115,115,0.15); color: #e57373; }
+.month-5 { background: rgba(186,104,200,0.15); color: #ba68c8; }
+.month-6 { background: rgba(77,182,172,0.15); color: #4db6ac; }
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+@media (max-width: 900px) {
+    .chart-row {
+        grid-template-columns: 1fr;
+    }
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .kpi-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .kpi-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+<header class="dashboard-header">
+    <div>
+        <h1>📊 2026年1-6月 A股上市公司补税可视化系统</h1>
+        <div class="header-subtitle">数据来源：上市公司公告 / 财新网 / 经济参考报 / 东方财富网 / 华税 等</div>
+    </div>
+    <div class="filters">
+        <div class="filter-group">
+            <label>📅 月份</label>
+            <select id="filter-month" onchange="dashboard.applyFilters()">
+                <option value="all">全部月份</option>
+                <option value="1月">1月</option>
+                <option value="2月">2月</option>
+                <option value="3月">3月</option>
+                <option value="4月">4月</option>
+                <option value="5月">5月</option>
+                <option value="6月">6月</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>💰 金额</label>
+            <select id="filter-amount" onchange="dashboard.applyFilters()">
+                <option value="all">全部</option>
+                <option value="big">亿元级 (≥1亿)</option>
+                <option value="mid">千万级 (1,000万~1亿)</option>
+                <option value="small">百万级 (&lt;1,000万)</option>
+            </select>
+        </div>
+    </div>
+</header>
+
+<!-- KPI Cards -->
+<section class="kpi-row">
+    <div class="kpi-card">
+        <div class="kpi-icon">🏢</div>
+        <div class="kpi-label">公告公司总数</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+        <div class="kpi-sub">已确认精确金额</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">补税总额（万元）</div>
+        <div class="kpi-value" id="kpi-total-amount">—</div>
+        <div class="kpi-sub">≈ <span id="kpi-total-yi">—</span> 亿元</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon">🔴</div>
+        <div class="kpi-label">最大单笔补税</div>
+        <div class="kpi-value" id="kpi-top-name" style="font-size:18px;">—</div>
+        <div class="kpi-sub" id="kpi-top-amount">—</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">亿元级公司数量</div>
+        <div class="kpi-value" id="kpi-big-count">—</div>
+        <div class="kpi-sub">≥1亿元</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-label">月均公告数</div>
+        <div class="kpi-value" id="kpi-monthly-avg">—</div>
+        <div class="kpi-sub">家/月</div>
+    </div>
+</section>
+
+<!-- Charts Row 1 -->
+<section class="chart-row">
+    <div class="chart-container">
+        <div class="chart-title"><span class="title-accent"></span>Top 15 补税金额（万元）</div>
+        <canvas id="top-bar-chart"></canvas>
+    </div>
+    <div class="chart-container">
+        <div class="chart-title"><span class="title-accent"></span>各月公告数量分布</div>
+        <canvas id="month-chart"></canvas>
+    </div>
+</section>
+
+<!-- Charts Row 2 -->
+<section class="chart-row">
+    <div class="chart-container">
+        <div class="chart-title"><span class="title-accent"></span>金额分级占比</div>
+        <canvas id="pie-chart"></canvas>
+    </div>
+    <div class="chart-container">
+        <div class="chart-title"><span class="title-accent"></span>各月补税金额趋势</div>
+        <canvas id="month-amount-chart"></canvas>
+    </div>
+</section>
+
+<!-- Data Table -->
+<section class="table-section">
+    <div class="table-header">
+        <div class="table-title"><span class="title-accent"></span>完整公司列表</div>
+        <div class="table-extra">点击列头排序 · 共 <span id="table-count">0</span> 家</div>
+    </div>
+    <table class="data-table" id="data-table">
+        <thead>
+            <tr>
+                <th onclick="dashboard.sortTable('rank')"># <span class="sort-arrow">▼</span></th>
+                <th onclick="dashboard.sortTable('name')">公司名称 <span class="sort-arrow"></span></th>
+                <th onclick="dashboard.sortTable('code')">代码 <span class="sort-arrow"></span></th>
+                <th onclick="dashboard.sortTable('amount')">金额（万元） <span class="sort-arrow">▼</span></th>
+                <th onclick="dashboard.sortTable('month')">公告月份 <span class="sort-arrow"></span></th>
+                <th onclick="dashboard.sortTable('date')">日期 <span class="sort-arrow"></span></th>
+                <th onclick="dashboard.sortTable('level')">级别 <span class="sort-arrow"></span></th>
+                <th onclick="dashboard.sortTable('note')">备注 <span class="sort-arrow"></span></th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+</section>
+
+<footer class="footer">
+    数据截止 2026年6月22日
+</footer>
+
+</div>
+
+<script>
+const DATA = [
+    { rank:1, name:'北大荒', code:'600598', amount:141000, month:'6月', date:'6月22日', level:'亿元级', note:'补税10.24亿+滞纳金3.86亿；单笔最大' },
+    { rank:2, name:'爱尔眼科', code:'300015', amount:52400, month:'5月', date:'5月20日', level:'亿元级', note:'—' },
+    { rank:3, name:'ST绝味', code:'603517', amount:34204, month:'4月', date:'4月4日', level:'亿元级', note:'—' },
+    { rank:4, name:'广汇能源', code:'600256', amount:31100, month:'1月', date:'1月22日', level:'亿元级', note:'另有水土保持费9.66亿' },
+    { rank:5, name:'爱施德', code:'002416', amount:30800, month:'6月', date:'6月5日', level:'亿元级', note:'滞纳金1.23亿' },
+    { rank:6, name:'电投能源', code:'002128', amount:29600, month:'5月', date:'5月29日', level:'亿元级', note:'补2025年度所得税' },
+    { rank:7, name:'太极实业(子公司)', code:'600667', amount:25300, month:'4月', date:'约4月', level:'亿元级', note:'高新资格不符' },
+    { rank:8, name:'五矿资本', code:'600390', amount:21240, month:'1月', date:'1月8日', level:'亿元级', note:'—' },
+    { rank:9, name:'淮河能源', code:'600575', amount:17400, month:'3月', date:'3月28日', level:'亿元级', note:'环保税' },
+    { rank:10, name:'蓝帆医疗', code:'002382', amount:16956, month:'1月', date:'1月31日', level:'亿元级', note:'关联交易' },
+    { rank:11, name:'深桑达A', code:'000032', amount:11248, month:'6月', date:'6月8日', level:'亿元级', note:'子公司中电二公司补税' },
+    { rank:12, name:'联合动力', code:'301656', amount:11050, month:'5月', date:'5月22日', level:'亿元级', note:'无滞纳金' },
+    { rank:11, name:'世纪恒通', code:'301428', amount:9494, month:'1月', date:'1月30日', level:'千万级', note:'—' },
+    { rank:12, name:'华邦健康(子公司)', code:'002004', amount:9241, month:'5月', date:'5月6日', level:'千万级', note:'含罚款4610万' },
+    { rank:13, name:'天岳先进', code:'688234', amount:8297, month:'1月', date:'1月1日', level:'千万级', note:'涉IPO报告期' },
+    { rank:14, name:'万凯新材(子公司)', code:'301216', amount:7604, month:'5月', date:'5月23日', level:'千万级', note:'滞纳金2642万' },
+    { rank:15, name:'建业股份', code:'603948', amount:7352, month:'6月', date:'6月4日', level:'千万级', note:'滞纳金1123万' },
+    { rank:16, name:'中国医药(子公司)', code:'600056', amount:6522, month:'1月', date:'1月1日', level:'千万级', note:'两家子公司' },
+    { rank:17, name:'浦东建设', code:'600284', amount:5194, month:'3月', date:'3月31日', level:'千万级', note:'—' },
+    { rank:18, name:'信邦制药', code:'002390', amount:5079, month:'1月', date:'1月26日', level:'千万级', note:'—' },
+    { rank:19, name:'楚江新材', code:'002171', amount:4551, month:'1月', date:'1月24日', level:'千万级', note:'—' },
+    { rank:20, name:'融捷股份', code:'002192', amount:4550, month:'4月', date:'4月1日', level:'千万级', note:'—' },
+    { rank:21, name:'珍宝岛(子公司)', code:'603567', amount:4446, month:'4月', date:'4月3日', level:'千万级', note:'稽查局认定' },
+    { rank:22, name:'恩捷股份(子公司)', code:'002812', amount:4610, month:'5月', date:'5月7日', level:'千万级', note:'三次补税累计超1.2亿' },
+    { rank:23, name:'宏昌电子', code:'603002', amount:4042, month:'6月', date:'6月3日', level:'千万级', note:'超上年全年利润' },
+    { rank:24, name:'宝鼎科技', code:'002552', amount:3766, month:'4月', date:'4月14日', level:'千万级', note:'—' },
+    { rank:25, name:'鲁阳节能(子公司)', code:'002088', amount:3699, month:'2月', date:'2月13日', level:'千万级', note:'资源综合利用不符' },
+    { rank:26, name:'沙钢股份', code:'002075', amount:3542, month:'4月', date:'4月24日', level:'千万级', note:'—' },
+    { rank:27, name:'甘肃能化', code:'000552', amount:3372, month:'1月', date:'1月29日', level:'千万级', note:'—' },
+    { rank:28, name:'中简科技', code:'300489', amount:3292, month:'4月', date:'4月15日', level:'千万级', note:'—' },
+    { rank:29, name:'天康生物', code:'002100', amount:3284, month:'4月', date:'4月17日', level:'千万级', note:'—' },
+    { rank:30, name:'重药控股(子公司)', code:'000950', amount:3221, month:'1月', date:'1月23日', level:'千万级', note:'西部大开发不符' },
+    { rank:31, name:'众源新材', code:'603527', amount:2935, month:'1月', date:'1月13日', level:'千万级', note:'—' },
+    { rank:32, name:'海目星', code:'688559', amount:2056, month:'4月', date:'4月30日', level:'千万级', note:'—' },
+    { rank:33, name:'艾迪药业', code:'688488', amount:1995, month:'1月', date:'1月26日', level:'千万级', note:'—' },
+    { rank:34, name:'奥佳华', code:'002614', amount:1963, month:'4月', date:'4月29日', level:'千万级', note:'—' },
+    { rank:35, name:'凯盛科技', code:'600552', amount:1837, month:'6月', date:'6月3日', level:'千万级', note:'—' },
+    { rank:36, name:'我爱我家', code:'000560', amount:1807, month:'4月', date:'4月1日', level:'千万级', note:'—' },
+    { rank:37, name:'冠昊生物', code:'300238', amount:1730, month:'3月', date:'3月13日', level:'千万级', note:'—' },
+    { rank:38, name:'中重科技', code:'603135', amount:1706, month:'1月', date:'1月9日', level:'千万级', note:'—' },
+    { rank:39, name:'丰原药业', code:'000153', amount:1656, month:'1月', date:'1月30日', level:'千万级', note:'—' },
+    { rank:40, name:'三丰智能', code:'300276', amount:1328, month:'1月', date:'1月27日', level:'千万级', note:'—' },
+    { rank:41, name:'汇得科技', code:'603192', amount:1230, month:'3月', date:'3月18日', level:'千万级', note:'—' },
+    { rank:42, name:'金陵药业', code:'000919', amount:841, month:'2月', date:'2月13日', level:'百万级', note:'—' },
+    { rank:43, name:'森林包装(子公司)', code:'605500', amount:775, month:'6月', date:'6月3日', level:'百万级', note:'收到税务局通知' },
+    { rank:44, name:'朗威股份', code:'301379', amount:698, month:'5月', date:'5月12日', level:'百万级', note:'—' },
+    { rank:45, name:'绿岛风', code:'301043', amount:690, month:'6月', date:'约6月初', level:'百万级', note:'收到税务局通知' },
+    { rank:46, name:'中关村', code:'000931', amount:603, month:'1月', date:'1月10日', level:'百万级', note:'—' },
+    { rank:47, name:'金健米业', code:'600127', amount:557, month:'4月', date:'4月21日', level:'百万级', note:'—' },
+    { rank:48, name:'海泰发展', code:'600082', amount:539, month:'3月', date:'3月31日', level:'百万级', note:'—' },
+    { rank:49, name:'赛摩智能', code:'300466', amount:506, month:'2月', date:'2月11日', level:'百万级', note:'—' },
+    { rank:50, name:'法狮龙', code:'605318', amount:414, month:'3月', date:'3月19日', level:'百万级', note:'—' },
+    { rank:51, name:'康美药业', code:'600518', amount:414, month:'3月', date:'3月21日', level:'百万级', note:'—' },
+    { rank:52, name:'浙江震元', code:'000705', amount:390, month:'4月', date:'4月9日', level:'百万级', note:'—' },
+    { rank:53, name:'京能热力', code:'002893', amount:375, month:'5月', date:'5月19日', level:'百万级', note:'—' },
+    { rank:54, name:'黄山谷捷', code:'301581', amount:342, month:'5月', date:'5月22日', level:'百万级', note:'汇算清缴无滞纳金' },
+    { rank:55, name:'中建环能', code:'300425', amount:328, month:'6月', date:'约6月初', level:'百万级', note:'收到处理决定书' },
+    { rank:56, name:'科迪纳微', code:'—', amount:214, month:'1月', date:'1月6日', level:'百万级', note:'—' },
+    { rank:57, name:'星徽股份(子公司)', code:'300464', amount:192, month:'6月', date:'约6月初', level:'百万级', note:'占净利润39.43%' },
+    { rank:58, name:'仁信新材', code:'301395', amount:562, month:'6月', date:'约6月初', level:'百万级', note:'占净利润16.77%' },
+];
+
+const COLORS = ['#4fc3f7','#81c784','#ffb74d','#e57373','#ba68c8','#4db6ac','#ff8a65','#a1887f'];
+const MONTH_COLORS = { '1月':'#4fc3f7','2月':'#81c784','3月':'#ffb74d','4月':'#e57373','5月':'#ba68c8','6月':'#4db6ac' };
+
+function fmtWan(v) {
+    if (v >= 10000) return (v/10000).toFixed(1) + '亿';
+    return v.toLocaleString() + '万';
+}
+
+function getLevel(amount) {
+    if (amount >= 10000) return '亿元级';
+    if (amount >= 1000) return '千万级';
+    return '百万级';
+}
+
+class Dashboard {
+    constructor(data) {
+        this.rawData = data;
+        this.filteredData = data;
+        this.charts = {};
+        this.sortField = 'amount';
+        this.sortDir = 'desc';
+        this.init();
+    }
+
+    init() {
+        this.renderKPIs();
+        this.renderCharts();
+        this.renderTable();
+        this.setupAutoHeight();
+    }
+
+    applyFilters() {
+        const monthFilter = document.getElementById('filter-month').value;
+        const amountFilter = document.getElementById('filter-amount').value;
+
+        this.filteredData = this.rawData.filter(d => {
+            if (monthFilter !== 'all' && d.month !== monthFilter) return false;
+            if (amountFilter === 'big' && d.amount < 10000) return false;
+            if (amountFilter === 'mid' && (d.amount < 1000 || d.amount >= 10000)) return false;
+            if (amountFilter === 'small' && d.amount >= 1000) return false;
+            return true;
+        });
+
+        this.renderKPIs();
+        this.updateCharts();
+        this.renderTable();
+    }
+
+    renderKPIs() {
+        const d = this.filteredData;
+        const total = d.length;
+        const totalAmt = d.reduce((s, r) => s + r.amount, 0);
+        const sorted = [...d].sort((a, b) => b.amount - a.amount);
+        const top = sorted[0];
+        const bigCount = d.filter(r => r.amount >= 10000).length;
+        const months = [...new Set(d.map(r => r.month))];
+        const avg = months.length > 0 ? (total / months.length).toFixed(1) : '—';
+
+        document.getElementById('kpi-total').textContent = total;
+        document.getElementById('kpi-total-amount').textContent = totalAmt.toLocaleString();
+        document.getElementById('kpi-total-yi').textContent = (totalAmt / 10000).toFixed(2);
+        if (top) {
+            document.getElementById('kpi-top-name').textContent = top.name;
+            document.getElementById('kpi-top-amount').textContent = fmtWan(top.amount);
+        }
+        document.getElementById('kpi-big-count').textContent = bigCount;
+        document.getElementById('kpi-monthly-avg').textContent = avg;
+    }
+
+    renderCharts() {
+        this.createTopBar();
+        this.createMonthBar();
+        this.createPieChart();
+        this.createMonthAmountLine();
+    }
+
+    updateCharts() {
+        this.updateTopBar();
+        this.updateMonthBar();
+        this.updatePieChart();
+        this.updateMonthAmountLine();
+    }
+
+    getTopData() {
+        return [...this.filteredData].sort((a, b) => b.amount - a.amount).slice(0, 15);
+    }
+
+    getMonthData() {
+        const months = ['1月','2月','3月','4月','5月','6月'];
+        const counts = months.map(m => this.filteredData.filter(d => d.month === m).length);
+        return { labels: months, counts };
+    }
+
+    getMonthAmountData() {
+        const months = ['1月','2月','3月','4月','5月','6月'];
+        const amounts = months.map(m =>
+            this.filteredData.filter(d => d.month === m).reduce((s, r) => s + r.amount, 0) / 10000
+        );
+        return { labels: months, amounts };
+    }
+
+    getPieData() {
+        const big = this.filteredData.filter(d => d.amount >= 10000).length;
+        const mid = this.filteredData.filter(d => d.amount >= 1000 && d.amount < 10000).length;
+        const small = this.filteredData.filter(d => d.amount < 1000).length;
+        return { labels: ['亿元级 (≥1亿)', '千万级 (1000万~1亿)', '百万级 (<1000万)'], values: [big, mid, small] };
+    }
+
+    createTopBar() {
+        const data = this.getTopData();
+        const ctx = document.getElementById('top-bar-chart').getContext('2d');
+        const maxAmt = Math.max(...data.map(d => d.amount));
+
+        this.charts.topBar = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.name),
+                datasets: [{
+                    label: '万元',
+                    data: data.map(d => d.amount),
+                    backgroundColor: data.map(d => {
+                        const a = d.amount / maxAmt;
+                        return a > 0.5 ? '#e57373' : a > 0.2 ? '#ffb74d' : '#4fc3f7';
+                    }),
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: { label: ctx => fmtWan(ctx.parsed.x) }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: {
+                            color: '#8899aa',
+                            callback: v => v >= 10000 ? (v/10000)+'亿' : v
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#e0e6ed', font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    updateTopBar() {
+        const data = this.getTopData();
+        const maxAmt = Math.max(...data.map(d => d.amount));
+        this.charts.topBar.data.labels = data.map(d => d.name);
+        this.charts.topBar.data.datasets[0].data = data.map(d => d.amount);
+        this.charts.topBar.data.datasets[0].backgroundColor = data.map(d => {
+            const a = d.amount / maxAmt;
+            return a > 0.5 ? '#e57373' : a > 0.2 ? '#ffb74d' : '#4fc3f7';
+        });
+        this.charts.topBar.update('none');
+    }
+
+    createMonthBar() {
+        const { labels, counts } = this.getMonthData();
+        const ctx = document.getElementById('month-chart').getContext('2d');
+        this.charts.monthBar = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: '公告数',
+                    data: counts,
+                    backgroundColor: labels.map(m => (MONTH_COLORS[m] || '#4fc3f7') + 'CC'),
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' 家' } }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#8899aa' } },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#8899aa', stepSize: 1 }
+                    }
+                }
+            }
+        });
+    }
+
+    updateMonthBar() {
+        const { labels, counts } = this.getMonthData();
+        this.charts.monthBar.data.labels = labels;
+        this.charts.monthBar.data.datasets[0].data = counts;
+        this.charts.monthBar.data.datasets[0].backgroundColor = labels.map(m => (MONTH_COLORS[m] || '#4fc3f7') + 'CC');
+        this.charts.monthBar.update('none');
+    }
+
+    createPieChart() {
+        const { labels, values } = this.getPieData();
+        const ctx = document.getElementById('pie-chart').getContext('2d');
+        this.charts.pie = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: ['#e57373CC','#ffb74dCC','#4fc3f7CC'],
+                    borderColor: '#1a2735',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#e0e6ed', padding: 12, usePointStyle: true } },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                                const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                                return `${ctx.label}: ${ctx.parsed} 家 (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    updatePieChart() {
+        const { labels, values } = this.getPieData();
+        this.charts.pie.data.labels = labels;
+        this.charts.pie.data.datasets[0].data = values;
+        this.charts.pie.update('none');
+    }
+
+    createMonthAmountLine() {
+        const { labels, amounts } = this.getMonthAmountData();
+        const ctx = document.getElementById('month-amount-chart').getContext('2d');
+        this.charts.monthAmt = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: '补税总额（亿元）',
+                    data: amounts,
+                    borderColor: '#4fc3f7',
+                    backgroundColor: 'rgba(79,195,247,0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#4fc3f7',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#e0e6ed', usePointStyle: true } },
+                    tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(2) + ' 亿元' } }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#8899aa' } },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#8899aa', callback: v => v + '亿' },
+                        beginAtZero: true,
+                    }
+                }
+            }
+        });
+    }
+
+    updateMonthAmountLine() {
+        const { labels, amounts } = this.getMonthAmountData();
+        this.charts.monthAmt.data.labels = labels;
+        this.charts.monthAmt.data.datasets[0].data = amounts;
+        this.charts.monthAmt.update('none');
+    }
+
+    renderTable() {
+        const d = [...this.filteredData];
+        d.sort((a, b) => {
+            const aVal = a[this.sortField], bVal = b[this.sortField];
+            if (typeof aVal === 'string') {
+                return this.sortDir === 'asc' ? aVal.localeCompare(bVal, 'zh') : bVal.localeCompare(aVal, 'zh');
+            }
+            return this.sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+        });
+
+        document.getElementById('table-count').textContent = d.length;
+
+        let html = '';
+        d.forEach((r, i) => {
+            const levelTag = r.amount >= 10000 ? 'tag-red' : r.amount >= 1000 ? 'tag-orange' : 'tag-green';
+            const monthNum = r.month.replace('月','');
+            const monthClass = 'month-' + monthNum;
+            html += `<tr>
+                <td>${i + 1}</td>
+                <td><strong>${r.name}</strong></td>
+                <td style="color:var(--text-muted)">${r.code}</td>
+                <td style="font-weight:600">${r.amount.toLocaleString()}</td>
+                <td><span class="month-badge ${monthClass}">${r.month}</span></td>
+                <td style="color:var(--text-secondary)">${r.date}</td>
+                <td><span class="tag-big ${levelTag}">${this.getLevelLabel(r.amount)}</span></td>
+                <td style="color:var(--text-muted);font-size:12px">${r.note}</td>
+            </tr>`;
+        });
+        document.getElementById('table-body').innerHTML = html;
+
+        // Update sort arrows
+        document.querySelectorAll('#data-table thead th').forEach(th => {
+            th.querySelector('.sort-arrow').textContent = '';
+        });
+        const header = document.querySelector(`#data-table thead th[onclick*="${this.sortField}"]`);
+        if (header) {
+            header.querySelector('.sort-arrow').textContent = this.sortDir === 'asc' ? ' ▲' : ' ▼';
+        }
+    }
+
+    getLevelLabel(amount) {
+        if (amount >= 10000) return '亿元级';
+        if (amount >= 1000) return '千万级';
+        return '百万级';
+    }
+
+    sortTable(field) {
+        if (this.sortField === field) {
+            this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortField = field;
+            this.sortDir = field === 'amount' || field === 'rank' ? 'desc' : 'asc';
+        }
+        this.renderTable();
+    }
+
+    setupAutoHeight() {
+        document.querySelectorAll('.chart-container canvas').forEach(c => {
+            c.parentElement.style.height = Math.min(Math.max(this.filteredData.length * 18, 200), 400) + 'px';
+        });
+    }
+}
+
+const dashboard = new Dashboard(DATA);
+</script>
+</body>
+</html>
