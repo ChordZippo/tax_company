@@ -298,6 +298,58 @@ body {
 .month-5 { background: rgba(186,104,200,0.15); color: #ba68c8; }
 .month-6 { background: rgba(77,182,172,0.15); color: #4db6ac; }
 
+.changelog-section {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+
+.changelog-section summary {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.changelog-section summary::-webkit-details-marker {
+    color: var(--text-secondary);
+}
+
+.changelog-item {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+    align-items: flex-start;
+}
+
+.changelog-item:last-child {
+    border-bottom: none;
+}
+
+.changelog-date {
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 70px;
+}
+
+.changelog-text {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.changelog-text strong {
+    color: var(--text-primary);
+}
+
 .footer {
     text-align: center;
     padding: 20px;
@@ -438,6 +490,26 @@ body {
         </thead>
         <tbody id="table-body"></tbody>
     </table>
+</section>
+
+<section class="changelog-section">
+    <details>
+        <summary>📋 更新日志</summary>
+        <div style="margin-top:12px">
+            <div class="changelog-item">
+                <span class="changelog-date">6月22日</span>
+                <span class="changelog-text">新增 <strong>北大荒</strong>(14.1亿，单笔最大)、<strong>欧林生物</strong>(8,741万)、<strong>ST东时</strong>(6,767万，偷税处罚)、<strong>龙蟠科技</strong>(2,861万)、<strong>倍杰特</strong>(981万)、<strong>苑东生物</strong>(858万)、<strong>渝三峡A</strong>(519万)</span>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-date">6月9日</span>
+                <span class="changelog-text">新增 <strong>深桑达A</strong>(1.12亿，子公司中电二公司补税)</span>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-date">6月6日</span>
+                <span class="changelog-text">初始版本发布，收录43家公司，约27亿元</span>
+            </div>
+        </div>
+    </details>
 </section>
 
 <footer class="footer">
