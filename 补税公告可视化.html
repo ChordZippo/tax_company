@@ -485,6 +485,7 @@ body {
                 <th onclick="dashboard.sortTable('month')">公告月份 <span class="sort-arrow"></span></th>
                 <th onclick="dashboard.sortTable('date')">日期 <span class="sort-arrow"></span></th>
                 <th onclick="dashboard.sortTable('level')">级别 <span class="sort-arrow"></span></th>
+                <th>PDF</th>
                 <th onclick="dashboard.sortTable('note')">备注 <span class="sort-arrow"></span></th>
             </tr>
         </thead>
@@ -915,16 +916,22 @@ class Dashboard {
             const levelTag = r.amount >= 10000 ? 'tag-red' : r.amount >= 1000 ? 'tag-orange' : 'tag-green';
             const monthNum = r.month.replace('月','');
             const monthClass = 'month-' + monthNum;
-            html += `<tr>
-                <td>${i + 1}</td>
-                <td><strong>${r.name}</strong></td>
-                <td style="color:var(--text-muted)">${r.code}</td>
-                <td style="font-weight:600">${r.amount.toLocaleString()}</td>
-                <td><span class="month-badge ${monthClass}">${r.month}</span></td>
-                <td style="color:var(--text-secondary)">${r.date}</td>
-                <td><span class="tag-big ${levelTag}">${this.getLevelLabel(r.amount)}</span></td>
-                <td style="color:var(--text-muted);font-size:12px">${r.note}</td>
-            </tr>`;
+            // Compute PDF filename date from r.date
+            let pdfDate = '';
+            const dMatch = r.date.match(/^(\d{1,2})月(\d{1,2})日/);
+            if (dMatch) pdfDate = '2026' + dMatch[1].padStart(2,'0') + dMatch[2].padStart(2,'0');
+            const pdfUrl = pdfDate ? 'https://github.com/ChordZippo/tax_company/raw/main/%E8%A1%A5%E7%A8%8E%E5%85%AC%E5%91%8APDF/' + encodeURIComponent(r.name) + '_' + r.code + '_' + pdfDate + '.pdf' : '';
+            html += '<tr>' +
+                '<td>' + (i+1) + '</td>' +
+                '<td><strong>' + r.name + '</strong></td>' +
+                '<td style="color:var(--text-muted)">' + r.code + '</td>' +
+                '<td style="font-weight:600">' + r.amount.toLocaleString() + '</td>' +
+                '<td><span class="month-badge ' + monthClass + '">' + r.month + '</span></td>' +
+                '<td style="color:var(--text-secondary)">' + r.date + '</td>' +
+                '<td><span class="tag-big ' + levelTag + '">' + this.getLevelLabel(r.amount) + '</span></td>' +
+                '<td' + (pdfUrl ? '>' + '<a href="' + pdfUrl + '" target="_blank" title="查看PDF公告原文" style="color:var(--accent);text-decoration:none;font-size:14px">📄</a>' : ' style="color:var(--text-muted)">—') + '</td>' +
+                '<td style="color:var(--text-muted);font-size:12px">' + r.note + '</td>' +
+            '</tr>';
         });
         document.getElementById('table-body').innerHTML = html;
 
