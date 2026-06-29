@@ -1,0 +1,448 @@
+[
+  {
+    "name": "洁特生物",
+    "code": "688026",
+    "amount": 514,
+    "valid": true
+  },
+  {
+    "name": "太极集团",
+    "code": "600129",
+    "amount": 1000,
+    "valid": true,
+    "manual": true
+  },
+  {
+    "name": "顺博合金",
+    "code": "002996",
+    "amount": 617,
+    "valid": true,
+    "manual": true
+  },
+  {
+    "name": "顺博合金",
+    "code": "002996",
+    "amount": 617,
+    "valid": true,
+    "manual": true
+  },
+  {
+    "name": "恒丰纸业",
+    "code": "600356",
+    "amount": 2652,
+    "valid": true
+  },
+  {
+    "name": "三湘印象",
+    "code": "000863",
+    "amount": 822,
+    "valid": true
+  },
+  {
+    "name": "金圆股份",
+    "code": "000546",
+    "amount": 707,
+    "valid": true
+  },
+  {
+    "name": "易明医药",
+    "code": "002826",
+    "amount": 25,
+    "valid": true
+  },
+  {
+    "name": "金财互联",
+    "code": "002530",
+    "amount": 309,
+    "valid": true
+  },
+  {
+    "name": "孚日股份",
+    "code": "002083",
+    "amount": 560,
+    "valid": true
+  },
+  {
+    "name": "君禾股份",
+    "code": "603617",
+    "amount": 713,
+    "valid": true
+  },
+  {
+    "name": "上海沪工",
+    "code": "603131",
+    "amount": 989,
+    "valid": true
+  },
+  {
+    "name": "华森制药",
+    "code": "002907",
+    "amount": 740,
+    "valid": true
+  },
+  {
+    "name": "道恩股份",
+    "code": "002838",
+    "amount": 615,
+    "valid": true
+  },
+  {
+    "name": "凯恩股份",
+    "code": "002012",
+    "amount": 320,
+    "valid": true
+  },
+  {
+    "name": "瑞丰高材",
+    "code": "300243",
+    "amount": 668,
+    "valid": true
+  },
+  {
+    "name": "正元智慧",
+    "code": "300645",
+    "amount": 353,
+    "valid": true
+  },
+  {
+    "name": "福田汽车",
+    "code": "600166",
+    "amount": 2883,
+    "valid": true
+  },
+  {
+    "name": "富春环保",
+    "code": "002479",
+    "amount": 671,
+    "valid": true
+  },
+  {
+    "name": "九洲集团",
+    "code": "300040",
+    "amount": 950,
+    "valid": true
+  },
+  {
+    "name": "盈峰环境",
+    "code": "000967",
+    "amount": 771,
+    "valid": true
+  },
+  {
+    "name": "天键股份",
+    "code": "301383",
+    "amount": 819,
+    "valid": true
+  },
+  {
+    "name": "方大炭素",
+    "code": "600516",
+    "amount": 714,
+    "valid": true
+  },
+  {
+    "name": "朗姿股份",
+    "code": "002612",
+    "amount": 653,
+    "valid": true
+  },
+  {
+    "name": "滨化股份",
+    "code": "601678",
+    "amount": 448,
+    "valid": true
+  },
+  {
+    "name": "和邦生物",
+    "code": "603077",
+    "amount": 969,
+    "valid": true
+  },
+  {
+    "name": "爱仕达",
+    "code": "002403",
+    "amount": 510,
+    "valid": true
+  },
+  {
+    "name": "红日药业",
+    "code": "300026",
+    "amount": 517,
+    "valid": true
+  },
+  {
+    "name": "至纯科技",
+    "code": "603690",
+    "amount": 453,
+    "valid": true
+  },
+  {
+    "name": "新点软件",
+    "code": "688232",
+    "amount": 884,
+    "valid": true
+  },
+  {
+    "name": "晨化股份",
+    "code": "300610",
+    "amount": 152,
+    "valid": true
+  },
+  {
+    "name": "三峡旅游",
+    "code": "002627",
+    "amount": 382,
+    "valid": true
+  },
+  {
+    "name": "亿田智能",
+    "code": "300911",
+    "amount": 565,
+    "valid": true,
+    "manual": true
+  },
+  {
+    "name": "东软载波",
+    "code": "300183",
+    "amount": 582,
+    "valid": true
+  },
+  {
+    "name": "獐子岛",
+    "code": "002069",
+    "amount": 872,
+    "valid": true
+  },
+  {
+    "name": "双枪科技",
+    "code": "001211",
+    "amount": 840,
+    "valid": true
+  },
+  {
+    "name": "和仁科技",
+    "code": "300550",
+    "amount": 289,
+    "valid": true
+  },
+  {
+    "name": "硅宝科技",
+    "code": "300019",
+    "amount": 583,
+    "valid": true
+  },
+  {
+    "name": "华强科技",
+    "code": "688151",
+    "amount": 799,
+    "valid": true
+  },
+  {
+    "name": "渝三峡A",
+    "code": "000565",
+    "amount": 241,
+    "valid": true
+  },
+  {
+    "name": "合兴包装",
+    "code": "002228",
+    "amount": 572,
+    "valid": true
+  },
+  {
+    "name": "新钢股份",
+    "code": "600782",
+    "amount": 755,
+    "valid": true
+  },
+  {
+    "name": "卓越新能",
+    "code": "688196",
+    "amount": 781,
+    "valid": true
+  },
+  {
+    "name": "四川九洲",
+    "code": "000801",
+    "amount": 698,
+    "valid": true
+  },
+  {
+    "name": "深桑达A",
+    "code": "000032",
+    "amount": 952,
+    "valid": true
+  },
+  {
+    "name": "山东黄金",
+    "code": "600547",
+    "amount": 73800,
+    "valid": true,
+    "manual": true
+  },
+  {
+    "name": "智慧农业",
+    "code": "000816",
+    "amount": 626,
+    "valid": true
+  },
+  {
+    "name": "赤天化",
+    "code": "600227",
+    "amount": 511,
+    "valid": true
+  },
+  {
+    "name": "中海达",
+    "code": "300177",
+    "amount": 687,
+    "valid": true
+  },
+  {
+    "name": "神奇制药",
+    "code": "600613",
+    "amount": 667,
+    "valid": true
+  },
+  {
+    "name": "天下秀",
+    "code": "600556",
+    "amount": 452,
+    "valid": true
+  },
+  {
+    "name": "重药控股",
+    "code": "000950",
+    "amount": 430,
+    "valid": true
+  },
+  {
+    "name": "百洋股份",
+    "code": "002696",
+    "amount": 321,
+    "valid": true
+  },
+  {
+    "name": "粤高速A",
+    "code": "000429",
+    "amount": 952,
+    "valid": true
+  },
+  {
+    "name": "云天化",
+    "code": "600096",
+    "amount": 342,
+    "valid": true
+  },
+  {
+    "name": "科顺股份",
+    "code": "300737",
+    "amount": 384,
+    "valid": true
+  },
+  {
+    "name": "欧林生物",
+    "code": "688319",
+    "amount": 108,
+    "valid": true
+  },
+  {
+    "name": "禾昌聚合",
+    "code": "920089",
+    "amount": 695,
+    "valid": true
+  },
+  {
+    "name": "浩物股份",
+    "code": "000757",
+    "amount": 410,
+    "valid": true
+  },
+  {
+    "name": "天马科技",
+    "code": "603668",
+    "amount": 536,
+    "valid": true
+  },
+  {
+    "name": "天龙集团",
+    "code": "300063",
+    "amount": 867,
+    "valid": true
+  },
+  {
+    "name": "亿利达",
+    "code": "002686",
+    "amount": 650,
+    "valid": true,
+    "manual": true
+  },
+  {
+    "name": "露笑科技",
+    "code": "002617",
+    "amount": 499,
+    "valid": true
+  },
+  {
+    "name": "鲁阳节能",
+    "code": "002088",
+    "amount": 770,
+    "valid": true
+  },
+  {
+    "name": "中央商场",
+    "code": "600280",
+    "amount": 392,
+    "valid": true
+  },
+  {
+    "name": "金城医药",
+    "code": "300233",
+    "amount": 160,
+    "valid": true
+  },
+  {
+    "name": "中超控股",
+    "code": "002471",
+    "amount": 829,
+    "valid": true
+  },
+  {
+    "name": "国光股份",
+    "code": "002749",
+    "amount": 600,
+    "valid": true,
+    "manual": true
+  },
+  {
+    "name": "海峡环保",
+    "code": "603817",
+    "amount": 473,
+    "valid": true
+  },
+  {
+    "name": "华菱钢铁",
+    "code": "000932",
+    "amount": 65734,
+    "valid": true,
+    "manual": true
+  },
+  {
+    "name": "华尔泰",
+    "code": "001217",
+    "amount": 998,
+    "valid": true
+  },
+  {
+    "name": "南天信息",
+    "code": "000948",
+    "amount": 570,
+    "valid": true
+  },
+  {
+    "name": "贵航股份",
+    "code": "600523",
+    "amount": 2255,
+    "valid": true
+  }
+]
