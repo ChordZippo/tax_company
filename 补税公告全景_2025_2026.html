@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>A股上市公司补税全景：2025-2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<style>
+:root{--bg:#0f1923;--card:#1a2735;--text:#e0e6ed;--sec:#8899aa;--muted:#5a6a7a;--border:#253545;--blue:#4fc3f7;--red:#e57373;--orange:#ffb74d;--green:#81c784}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text)}
+.container{max-width:1440px;margin:0 auto;padding:16px 20px}
+.header{background:linear-gradient(135deg,#0d1b2a,#1a2735);padding:20px 24px;border-radius:12px;margin-bottom:16px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header h1{font-size:20px;font-weight:700;color:#fff}
+.header span{font-size:12px;color:var(--sec);margin-top:2px;display:block}
+
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-btn{padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--sec);font-size:13px;cursor:pointer;transition:all .2s}
+.filter-btn:hover{border-color:var(--blue)}
+.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi-card{background:var(--card);border-radius:10px;padding:16px;border:1px solid var(--border)}
+.kpi-label{font-size:11px;color:var(--sec);margin-bottom:4px;letter-spacing:.3px}
+.kpi-value{font-size:22px;font-weight:700;color:#fff}
+.kpi-sub{font-size:11px;color:var(--muted)}
+
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:900px){.charts{grid-template-columns:1fr}}
+.chart-box{background:var(--card);border-radius:10px;padding:16px 20px;border:1px solid var(--border)}
+.chart-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px}
+.chart-box canvas{max-height:280px}
+
+.table-box{background:var(--card);border-radius:10px;padding:16px 20px;border:1px solid var(--border);overflow-x:auto}
+.tb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.tb-title{font-size:14px;font-weight:600}
+.tb-count{font-size:12px;color:var(--sec)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);color:var(--sec);font-weight:600;font-size:11px;letter-spacing:.5px;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--blue)}
+tbody td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+tbody tr:hover{background:rgba(79,195,247,.04)}
+.badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600}
+.b25{background:rgba(79,195,247,.15);color:var(--blue)}
+.b26{background:rgba(255,183,77,.15);color:var(--orange)}
+.amount{font-weight:600}
+.amt-big{color:var(--red)}
+.amt-mid{color:var(--orange)}
+.amt-small{color:var(--green)}
+.footer{text-align:center;padding:16px;color:var(--muted);font-size:11px}
+</style>
+</head>
+<body>
+<div class="container" id="app">
+
+<div class="header">
+<div>
+<h1>📊 A股上市公司补税全景</h1>
+<span>2025-2026年 · 数据来源：上市公司公告 · 部分金额为PDF提取 / 人工核实</span>
+</div>
+<div class="filters">
+<button class="filter-btn active" data-year="all" onclick="switchYear('all')">📅 全部</button>
+<button class="filter-btn" data-year="2026" onclick="switchYear('2026')">2026年</button>
+<button class="filter-btn" data-year="2025" onclick="switchYear('2025')">2025年</button>
+</div>
+</div>
+
+<div class="kpi">
+<div class="kpi-card"><div class="kpi-label">🏢 公告公司</div><div class="kpi-value" id="kpi-count">—</div></div>
+<div class="kpi-card"><div class="kpi-label">💰 补税总额(万元)</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub" id="kpi-yi">— 亿元</div></div>
+<div class="kpi-card"><div class="kpi-label">🔝 最大单笔</div><div class="kpi-value" id="kpi-top" style="font-size:16px">—</div></div>
+<div class="kpi-card"><div class="kpi-label">📊 亿元级</div><div class="kpi-value" id="kpi-big">—</div></div>
+</div>
+
+<div class="charts">
+<div class="chart-box">
+<div class="chart-title">📈 Top 15 补税金额</div>
+<canvas id="chart-bar"></canvas>
+</div>
+<div class="chart-box">
+<div class="chart-title">📅 各月公告数量</div>
+<canvas id="chart-month"></canvas>
+</div>
+<div class="chart-box">
+<div class="chart-title">🎯 金额分级占比</div>
+<canvas id="chart-pie"></canvas>
+</div>
+<div class="chart-box">
+<div class="chart-title">💰 各月补税总额趋势</div>
+<canvas id="chart-trend"></canvas>
+</div>
+</div>
+
+<div class="table-box">
+<div class="tb-header">
+<div class="tb-title">📋 公司列表</div>
+<div class="tb-count">共 <span id="table-count">0</span> 家</div>
+</div>
+<table>
+<thead><tr>
+<th onclick="sortTable('date')">日期</th>
+<th onclick="sortTable('name')">公司</th>
+<th onclick="sortTable('code')">代码</th>
+<th onclick="sortTable('y')">年份</th>
+<th onclick="sortTable('amount')">金额(万元) ▼</th>
+<th>来源</th>
+</tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<footer class="footer">数据持续更新中 · 金额标识: 🔴亿元级 🟡千万级 🟢百万级</footer>
+</div>
+
+<script>
+let ALL_DATA = [];
+let filtered = [];
+let charts = {};
+let sortField = 'amount';
+let sortDir = 'desc';
+let currentYear = 'all';
+
+function loadData() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'data_combined.json', false);
+    xhr.send();
+    ALL_DATA = JSON.parse(xhr.responseText);
+    ALL_DATA.forEach(d => d._amount = d.amount || 0);
+    applyFilter();
+}
+loadData();
+
+function switchYear(y) {
+    currentYear = y;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.year === y));
+    applyFilter();
+}
+
+function applyFilter() {
+    filtered = currentYear === 'all' ? ALL_DATA : ALL_DATA.filter(d => d.y === currentYear);
+    renderKPI();
+    renderCharts();
+    renderTable();
+}
+
+function renderKPI() {
+    const d = filtered;
+    document.getElementById('kpi-count').textContent = d.length;
+    const total = d.reduce((s,r) => s + r._amount, 0);
+    document.getElementById('kpi-total').textContent = total.toLocaleString();
+    document.getElementById('kpi-yi').textContent = '≈ ' + (total/10000).toFixed(2) + ' 亿元';
+    const top = [...d].sort((a,b) => b._amount - a._amount)[0];
+    document.getElementById('kpi-top').textContent = top ? top.name + ' ' + fmt(top._amount) : '—';
+    document.getElementById('kpi-big').textContent = d.filter(r => r._amount >= 10000).length;
+}
+
+function fmt(v) {
+    if (v >= 10000) return (v/10000).toFixed(1) + '亿';
+    if (v > 0) return v.toLocaleString() + '万';
+    return '—';
+}
+
+function renderCharts() {
+    createBar();
+    createMonth();
+    createPie();
+    createTrend();
+}
+
+function createBar() {
+    if (charts.bar) charts.bar.destroy();
+    const top = [...filtered].sort((a,b) => b._amount - a._amount).slice(0, 15);
+    const ctx = document.getElementById('chart-bar').getContext('2d');
+    charts.bar = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: top.map(d => d.name),
+            datasets: [{
+                data: top.map(d => d._amount),
+                backgroundColor: top.map(d => {
+                    const a = d._amount / Math.max(...top.map(x=>x._amount));
+                    return a > 0.5 ? '#e57373' : a > 0.2 ? '#ffb74d' : '#4fc3f7';
+                }),
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => fmt(ctx.parsed.x) } } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8899aa', callback: v => v >= 10000 ? (v/10000)+'亿' : v } },
+                y: { grid: { display: false }, ticks: { color: '#e0e6ed', font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+function createMonth() {
+    if (charts.month) charts.month.destroy();
+    const months = currentYear === 'all' 
+        ? ['25-1','25-2','25-3','25-4','25-5','25-6','25-7','25-8','25-9','25-10','25-11','25-12','26-1','26-2','26-3','26-4','26-5','26-6']
+        : Array.from({length:12}, (_,i) => (currentYear==='2025'?'25':'26')+'-'+(i+1));
+    const counts = months.map(m => {
+        const [y, mo] = m.split('-');
+        return filtered.filter(d => d.y === '20'+y && d.m === mo).length;
+    });
+    const ctx = document.getElementById('chart-month').getContext('2d');
+    charts.month = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: months, datasets: [{ data: counts, backgroundColor: months.map(m => (m.startsWith('25')?'#4fc3f7':'#ffb74d')+'CC'), borderRadius: 4 }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' 家' } } },
+            scales: { x: { grid: { display: false }, ticks: { color: '#8899aa', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8899aa', stepSize: 1 } } }
+        }
+    });
+}
+
+function createPie() {
+    if (charts.pie) charts.pie.destroy();
+    const big = filtered.filter(d => d._amount >= 10000).length;
+    const mid = filtered.filter(d => d._amount >= 1000 && d._amount < 10000).length;
+    const small = filtered.filter(d => d._amount > 0 && d._amount < 1000).length;
+    const none = filtered.filter(d => d._amount === 0).length;
+    const ctx = document.getElementById('chart-pie').getContext('2d');
+    charts.pie = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['亿元级(≥1亿)','千万级(1000万~1亿)','百万级(<1000万)','待核实'],
+            datasets: [{ data: [big, mid, small, none], backgroundColor: ['#e57373CC','#ffb74dCC','#4fc3f7CC','#5a6a7aCC'], borderColor: '#1a2735', borderWidth: 2 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '55%',
+            plugins: { legend: { position: 'right', labels: { color: '#e0e6ed', padding: 10, usePointStyle: true, font: { size: 11 } } },
+                tooltip: { callbacks: { label: ctx => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); return ctx.label + ': ' + ctx.parsed + '家 (' + (ctx.parsed/t*100).toFixed(1)+'%)'; } } }
+            }
+        }
+    });
+}
+
+function createTrend() {
+    if (charts.trend) charts.trend.destroy();
+    const months = currentYear === 'all'
+        ? ['25-1','25-2','25-3','25-4','25-5','25-6','25-7','25-8','25-9','25-10','25-11','25-12','26-1','26-2','26-3','26-4','26-5','26-6']
+        : Array.from({length:12}, (_,i) => (currentYear==='2025'?'25':'26')+'-'+(i+1));
+    const totals = months.map(m => {
+        const [y, mo] = m.split('-');
+        return filtered.filter(d => d.y === '20'+y && d.m === mo).reduce((s,r) => s + r._amount, 0) / 10000;
+    });
+    const ctx = document.getElementById('chart-trend').getContext('2d');
+    charts.trend = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                data: totals, borderColor: '#4fc3f7', backgroundColor: 'rgba(79,195,247,0.1)', fill: true,
+                tension: 0.3, pointRadius: 4, pointBackgroundColor: '#4fc3f7', borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(2) + ' 亿元' } } },
+            scales: { x: { grid: { display: false }, ticks: { color: '#8899aa', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8899aa', callback: v => v + '亿' }, beginAtZero: true } }
+        }
+    });
+}
+
+function renderTable() {
+    const d = [...filtered].sort((a,b) => {
+        const av = a[sortField], bv = b[sortField];
+        if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv,'zh') : bv.localeCompare(av,'zh');
+        return sortDir === 'asc' ? av - bv : bv - av;
+    });
+    document.getElementById('table-count').textContent = d.length;
+    let html = '';
+    d.forEach((r,i) => {
+        const amtCls = r._amount >= 10000 ? 'amt-big' : r._amount >= 1000 ? 'amt-mid' : 'amt-small';
+        const yCls = r.y === '2025' ? 'b25' : 'b26';
+        const pdfName = encodeURIComponent(r.name) + '_' + r.code + '_' + r.date.replace(/[^\d]/g,'').slice(-8) + '.pdf';
+        const pdfPath = r.y === '2025' ? '补税公告PDF_2025' : '补税公告PDF';
+        const pdfUrl = 'https://github.com/ChordZippo/tax_company/raw/main/' + encodeURIComponent(pdfPath) + '/' + pdfName;
+        html += `<tr>
+            <td style="color:var(--sec)">${r.date}</td>
+            <td><strong>${r.name}</strong></td>
+            <td style="color:var(--muted)">${r.code}</td>
+            <td><span class="badge ${yCls}">${r.y}</span></td>
+            <td class="amount ${amtCls}">${r._amount > 0 ? r._amount.toLocaleString() : '—'}</td>
+            <td>${r._amount > 0 ? '<a href="'+pdfUrl+'" target="_blank" style="color:var(--blue);text-decoration:none">📄</a>' : '—'}</td>
+        </tr>`;
+    });
+    document.getElementById('tbody').innerHTML = html;
+}
+
+function sortTable(field) {
+    if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    else { sortField = field; sortDir = field === 'amount' ? 'desc' : 'asc'; }
+    renderTable();
+}
+</script>
+</body>
+</html>
