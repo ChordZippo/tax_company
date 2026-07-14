@@ -380,7 +380,9 @@ function renderTable() {
     d.forEach((r,i) => {
         const amtCls = r._amount >= 10000 ? 'amt-big' : r._amount >= 1000 ? 'amt-mid' : 'amt-small';
         const yCls = r.y === '2025' ? 'b25' : 'b26';
-        const pdfName = encodeURIComponent(r.name) + '_' + r.code + '_' + r.date.replace(/[^\d]/g,'').slice(-8) + '.pdf';
+        const pdfName = encodeURIComponent(r.name) + '_' + r.code + '_' + r.date.replace(/[^\d,
+  {"y": "2026", "name": "包钢股份", "code": "600010", "amount": 32144, "m": "7", "date": "7.14", "note": "子公司补增值税+附加税+滞纳金3.21亿"},
+  {"y": "2026", "name": "福昕软件", "code": "688095", "amount": 399, "m": "7", "date": "7.14", "note": "涉税事项自查补税"}]/g,'').slice(-8) + '.pdf';
         const pdfPath = r.y === '2025' ? '补税公告PDF_2025' : '补税公告PDF';
         const pdfUrl = 'https://github.com/ChordZippo/tax_company/raw/main/' + encodeURIComponent(pdfPath) + '/' + pdfName;
         html += `<tr>
