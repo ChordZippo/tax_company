@@ -652,7 +652,7 @@ const DATA = [
 ];
 
 const COLORS = ['#4fc3f7','#81c784','#ffb74d','#e57373','#ba68c8','#4db6ac','#ff8a65','#a1887f'];
-const MONTH_COLORS = { '1月':'#4fc3f7','2月':'#81c784','3月':'#ffb74d','4月':'#e57373','5月':'#ba68c8','6月':'#4db6ac' };
+const MONTH_COLORS = { '1月':'#4fc3f7','2月':'#81c784','3月':'#ffb74d','4月':'#e57373','5月':'#ba68c8','6月':'#4db6ac','7月':'#ff8a65','8月':'#7986cb' };
                 
 function fmtWan(v) {
     if (v >= 10000) return (v/10000).toFixed(1) + '亿';
@@ -739,13 +739,13 @@ class Dashboard {
     }
 
     getMonthData() {
-        const months = ['1月','2月','3月','4月','5月','6月'];
+        const months = ['1月','2月','3月','4月','5月','6月','7月','8月'];
                         const counts = months.map(m => this.filteredData.filter(d => d.month === m).length);
         return { labels: months, counts };
     }
 
     getMonthAmountData() {
-        const months = ['1月','2月','3月','4月','5月','6月'];
+        const months = ['1月','2月','3月','4月','5月','6月','7月','8月'];
                         const amounts = months.map(m =>
             this.filteredData.filter(d => d.month === m).reduce((s, r) => s + r.amount, 0) / 10000
         );
